@@ -22,13 +22,18 @@ vocab/fiiller.json            örnek deste (12 fiil)
 
 ## GitHub Pages'e deploy
 
-1. Bu depoyu GitHub'a push et.
-2. Depoda **Settings → Pages** bölümüne gir.
-3. **Source** olarak `Deploy from a branch` seç; branch olarak `main` (veya
-   kullandığın branch) ve klasör olarak `/ (root)` seç, kaydet.
-4. Birkaç dakika içinde uygulama `https://<kullanıcı-adın>.github.io/<depo-adı>/`
-   adresinde yayına girer. iPhone'da Safari ile aç, "Paylaş → Ana Ekrana Ekle"
-   dersen tam ekran çalışır.
+Depoda hazır bir workflow var: `.github/workflows/pages.yml`. Yapılacak tek şey
+**Settings → Pages → Source** ayarını `GitHub Actions` yapmak. Sonrasında
+default branch'e her push'ta site otomatik yayınlanır; deploy'un durumunu
+**Actions** sekmesinden izleyebilirsin.
+
+Alternatif olarak workflow'a hiç dokunmadan **Source → `Deploy from a branch`**
+seçip branch'i ve `/ (root)` klasörünü de gösterebilirsin — build adımı olmadığı
+için sonuç aynı.
+
+Her iki durumda da adres: `https://<kullanıcı-adın>.github.io/<depo-adı>/`
+İlk yayın birkaç dakika sürebilir. iPhone'da Safari ile aç, "Paylaş → Ana Ekrana
+Ekle" dersen tam ekran çalışır.
 
 ### Yerelde denemek
 
