@@ -20,19 +20,13 @@
 
 <main>
 
-  <!-- 1) Deste seçimi -->
-  <section id="screen-decks" class="screen">
-    <p class="hint">Çalışmak istediğin seviyeyi ve desteyi seç.</p>
-    <div id="level-filter" class="level-filter" role="group" aria-label="Seviye filtresi">
-      <button class="chip is-active" type="button" data-level="all">Tümü</button>
-      <button class="chip" type="button" data-level="A">A <span class="chip-sub">başlangıç</span></button>
-      <button class="chip" type="button" data-level="B">B <span class="chip-sub">orta</span></button>
-      <button class="chip" type="button" data-level="C">C <span class="chip-sub">ileri</span></button>
+  <!-- 1) Seviye seçimi -->
+  <section id="screen-levels" class="screen">
+    <p class="hint">Hangi seviyeyi çalışmak istiyorsun?</p>
+    <div id="level-list" class="deck-list">
+      <p class="muted">Kelimeler yükleniyor…</p>
     </div>
-    <div id="deck-list" class="deck-list">
-      <p class="muted">Desteler yükleniyor…</p>
-    </div>
-    <p id="deck-error" class="error" hidden></p>
+    <p id="load-error" class="error" hidden></p>
   </section>
 
   <!-- 2) Çalışma -->

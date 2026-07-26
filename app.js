@@ -1,15 +1,14 @@
 /* Fransızca Kartlar — basit, backend'siz aralıklı tekrar uygulaması.
-   Tüm ilerleme localStorage'da tutulur. */
+   Kelimeler tek bir vocab.json dosyasından okunur; her kartın kendi seviyesi
+   (A1, B2 …) vardır ve seçilen seviyede çıkar. İlerleme localStorage'da. */
 
 (function () {
   'use strict';
 
   // ---------------------------------------------------------------- sabitler
-  var STORAGE_KEY = 'frcards.v1.progress';
-  var LAST_DECK_KEY = 'frcards.v1.lastDeck';
-  var LEVEL_KEY = 'frcards.v1.level';
+  var STORAGE_KEY = 'frcards.v2.progress';
   var TR_PREF_KEY = 'frcards.v1.showExampleTr';
-  var DECKS_INDEX = 'vocab/decks.json';
+  var VOCAB_FILE = 'vocab.json';
 
   var DAY = 24 * 60 * 60 * 1000;
   var AGAIN_DELAY = 10 * 60 * 1000; // "Tekrar" → 10 dakika sonra
@@ -17,14 +16,21 @@
   var START_EASE = 2.5;
   var MAX_INTERVAL = 365;
 
+  // Seçim ekranındaki gruplar. Kart, seviyesinin ilk harfiyle gruba girer.
+  var GROUPS = [
+    { key: 'all', name: 'Tümü',    note: 'Bütün seviyeler karışık' },
+    { key: 'A',   name: 'A',       note: 'Başlangıç' },
+    { key: 'B',   name: 'B',       note: 'Orta' },
+    { key: 'C',   name: 'C',       note: 'İleri' }
+  ];
+
   // ------------------------------------------------------------------ durum
-  var decks = [];          // [{id, name, file, description, level, cards: []}]
-  var deck = null;         // aktif deste
+  var cards = [];          // vocab.json'daki bütün kartlar
+  var group = null;        // aktif grup ('all' | 'A' | 'B' | 'C')
   var queue = [];          // bu oturumda gösterilecek kartlar
   var current = null;      // ekrandaki kart
   var stats = null;        // oturum istatistikleri
-  var level = readPref(LEVEL_KEY, 'all');            // 'all' | 'A' | 'B' | 'C'
-  var showTr = readPref(TR_PREF_KEY, '0') === '1';   // örnek cümle çevirisi açık mı
+  var showTr = readPref(TR_PREF_KEY, '0') === '1'; // örnek cümle çevirisi açık mı
 
   function readPref(key, fallback) {
     try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
@@ -42,10 +48,9 @@
     title: $('topbar-title'),
     count: $('topbar-count'),
 
-    screenDecks: $('screen-decks'),
-    levelFilter: $('level-filter'),
-    deckList: $('deck-list'),
-    deckError: $('deck-error'),
+    screenLevels: $('screen-levels'),
+    levelList: $('level-list'),
+    loadError: $('load-error'),
 
     screenStudy: $('screen-study'),
     front: $('card-front'),
@@ -90,11 +95,7 @@
 
   var progress = loadProgress();
 
-  function keyOf(deckId, cardId) { return deckId + '::' + cardId; }
-
-  function stateOf(deckId, cardId) {
-    return progress[keyOf(deckId, cardId)] || null;
-  }
+  function stateOf(cardId) { return progress[cardId] || null; }
 
   function newState() {
     return { due: 0, interval: 0, ease: START_EASE, reps: 0 };
@@ -162,8 +163,7 @@
   /* Buton altındaki "ne zaman tekrar geleceği" etiketi. */
   function previewLabel(state, grade, now) {
     if (grade === 'again') return '10 dk';
-    var s = schedule(state, grade, now);
-    return formatDays(s.interval);
+    return formatDays(schedule(state, grade, now).interval);
   }
 
   function formatDays(d) {
@@ -230,116 +230,87 @@
   // ============================================================ ekran yönetimi
 
   function showScreen(name) {
-    el.screenDecks.hidden = name !== 'decks';
+    el.screenLevels.hidden = name !== 'levels';
     el.screenStudy.hidden = name !== 'study';
     el.screenSummary.hidden = name !== 'summary';
-    el.back.hidden = name === 'decks';
+    el.back.hidden = name === 'levels';
     el.count.hidden = name !== 'study';
   }
 
-  // ============================================================ desteleri yükle
+  // ============================================================ kelimeleri yükle
 
-  function fetchJSON(url) {
-    return fetch(url, { cache: 'no-cache' }).then(function (res) {
-      if (!res.ok) throw new Error(url + ' okunamadı (HTTP ' + res.status + ')');
-      return res.json();
-    });
-  }
-
-  /* Deste dosyası ya düz bir dizi ya da { name, cards: [...] } olabilir. */
-  function normalizeCards(raw, deckId, deckLevel) {
+  /* id verilmemişse kart, Fransızca yüzüyle tanınır — böylece elle JSON
+     düzenlerken id uydurmak gerekmez. */
+  function normalizeCards(raw) {
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.cards) ? raw.cards : []);
     var out = [];
     for (var i = 0; i < list.length; i++) {
       var c = list[i];
       if (!c || !c.front || !c.back) continue;
       out.push({
-        id: String(c.id != null ? c.id : (deckId + '-' + i)),
+        id: String(c.id != null ? c.id : c.front),
+        level: String(c.level || '').toUpperCase(),
         front: String(c.front),
         back: String(c.back),
         example: c.example ? String(c.example) : '',
-        exampleTr: c.exampleTr ? String(c.exampleTr) : '',
-        // Kartın kendi seviyesi yoksa destenin seviyesini devralır.
-        level: String(c.level || deckLevel || '').toUpperCase()
+        exampleTr: c.exampleTr ? String(c.exampleTr) : ''
       });
     }
     return out;
   }
 
-  /* 'A1', 'B2' gibi seviyeler A/B/C filtresine ilk harfiyle eşleşir. */
-  function matchesLevel(cardLevel, filter) {
-    if (filter === 'all') return true;
-    return !!cardLevel && cardLevel.charAt(0) === filter;
+  /* 'A1', 'B2' gibi seviyeler A/B/C grubuna ilk harfleriyle girer. */
+  function inGroup(card, key) {
+    if (key === 'all') return true;
+    return !!card.level && card.level.charAt(0) === key;
   }
 
-  function cardsForLevel(d) {
-    return d.cards.filter(function (c) { return matchesLevel(c.level, level); });
+  function cardsOf(key) {
+    return cards.filter(function (c) { return inGroup(c, key); });
   }
 
-  function loadDecks() {
-    return fetchJSON(DECKS_INDEX).then(function (index) {
-      var list = Array.isArray(index) ? index : (index.decks || []);
-      return Promise.all(list.map(function (d, i) {
-        var id = String(d.id || d.file || ('deste-' + i));
-        var lvl = String(d.level || '').toUpperCase();
-        return fetchJSON(d.file).then(function (raw) {
-          return {
-            id: id,
-            name: d.name || id,
-            description: d.description || '',
-            level: lvl,
-            file: d.file,
-            cards: normalizeCards(raw, id, lvl)
-          };
-        }).catch(function (err) {
-          console.warn(err);
-          return {
-            id: id, name: d.name || id, description: 'Dosya okunamadı',
-            level: lvl, file: d.file, cards: []
-          };
-        });
-      }));
-    });
+  function loadVocab() {
+    return fetch(VOCAB_FILE, { cache: 'no-cache' }).then(function (res) {
+      if (!res.ok) throw new Error(VOCAB_FILE + ' okunamadı (HTTP ' + res.status + ')');
+      return res.json();
+    }).then(normalizeCards);
   }
 
-  function dueCount(cards, deckId, now) {
+  // ============================================================ seviye listesi
+
+  function dueCount(list, now) {
     var n = 0;
-    for (var i = 0; i < cards.length; i++) {
-      if (isDue(stateOf(deckId, cards[i].id), now)) n++;
+    for (var i = 0; i < list.length; i++) {
+      if (isDue(stateOf(list[i].id), now)) n++;
     }
     return n;
   }
 
-  function renderLevelChips() {
-    var chips = el.levelFilter.querySelectorAll('.chip');
-    for (var i = 0; i < chips.length; i++) {
-      chips[i].classList.toggle('is-active', chips[i].dataset.level === level);
+  /* Grup içindeki alt seviyeleri sırayla listeler: "A1, A2" */
+  function subLevels(list) {
+    var seen = [];
+    for (var i = 0; i < list.length; i++) {
+      var lv = list[i].level;
+      if (lv && seen.indexOf(lv) < 0) seen.push(lv);
     }
+    return seen.sort();
   }
 
-  function renderDecks() {
+  function renderLevels() {
     var now = Date.now();
-    el.deckList.innerHTML = '';
-    renderLevelChips();
+    el.levelList.innerHTML = '';
 
-    if (!decks.length) {
-      el.deckList.innerHTML = '<p class="muted">Hiç deste bulunamadı. vocab/decks.json dosyasını kontrol et.</p>';
+    if (!cards.length) {
+      el.levelList.innerHTML =
+        '<p class="muted">Hiç kelime bulunamadı. vocab.json dosyasını kontrol et.</p>';
       return;
     }
 
-    // Seçili seviyede kartı olmayan desteler listelenmez.
-    var visible = decks.filter(function (d) { return cardsForLevel(d).length > 0; });
+    GROUPS.forEach(function (g) {
+      var list = cardsOf(g.key);
+      if (!list.length) return;   // o harfte kelime yoksa satırı gösterme
 
-    if (!visible.length) {
-      el.deckList.innerHTML =
-        '<p class="muted">Bu seviyede kart yok. Başka bir seviye seç ya da vocab/ altına ' +
-        'bu seviyede bir deste ekle.</p>';
-      return;
-    }
-
-    visible.forEach(function (d) {
-      var cards = cardsForLevel(d);
-      var due = dueCount(cards, d.id, now);
+      var due = dueCount(list, now);
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'deck';
@@ -349,19 +320,13 @@
 
       var name = document.createElement('div');
       name.className = 'deck-name';
-      if (d.level) {
-        var tag = document.createElement('span');
-        tag.className = 'level-tag';
-        tag.textContent = d.level;
-        name.appendChild(tag);
-      }
-      name.appendChild(document.createTextNode(d.name));
+      name.textContent = g.name;
 
       var sub = document.createElement('div');
       sub.className = 'deck-sub';
-      sub.textContent = d.description
-        ? d.description + ' · ' + cards.length + ' kart'
-        : cards.length + ' kart';
+      var levels = g.key === 'all' ? [] : subLevels(list);
+      sub.textContent = (levels.length ? levels.join(', ') + ' · ' : g.note + ' · ') +
+                        list.length + ' kelime';
 
       var badge = document.createElement('span');
       badge.className = 'deck-due' + (due ? '' : ' zero');
@@ -373,8 +338,8 @@
       btn.appendChild(info);
       btn.appendChild(badge);
 
-      btn.addEventListener('click', function () { startSession(d); });
-      el.deckList.appendChild(btn);
+      btn.addEventListener('click', function () { startSession(g); });
+      el.levelList.appendChild(btn);
     });
   }
 
@@ -388,17 +353,16 @@
     return arr;
   }
 
-  function startSession(d) {
-    deck = d;
-    try { localStorage.setItem(LAST_DECK_KEY, d.id); } catch (e) {}
-
+  function startSession(g) {
+    group = g;
     var now = Date.now();
-    queue = shuffle(cardsForLevel(d).filter(function (c) {
-      return isDue(stateOf(d.id, c.id), now);
+
+    queue = shuffle(cardsOf(g.key).filter(function (c) {
+      return isDue(stateOf(c.id), now);
     }));
 
     stats = { reviewed: {}, answers: 0, easy: 0, again: 0 };
-    el.title.textContent = d.name;
+    el.title.textContent = g.key === 'all' ? 'Tümü' : g.name + ' · ' + g.note;
 
     if (!queue.length) {
       showSummary();
@@ -454,7 +418,7 @@
 
     // Buton etiketlerine sonraki aralığı yaz
     var now = Date.now();
-    var st = stateOf(deck.id, current.id) || newState();
+    var st = stateOf(current.id) || newState();
     ['again', 'hard', 'good', 'easy'].forEach(function (g) {
       var node = el.grades.querySelector('[data-when="' + g + '"]');
       if (node) node.textContent = previewLabel(st, g, now);
@@ -466,9 +430,8 @@
 
     var now = Date.now();
     var card = current;
-    var st = stateOf(deck.id, card.id) || newState();
 
-    progress[keyOf(deck.id, card.id)] = schedule(st, grade, now);
+    progress[card.id] = schedule(stateOf(card.id) || newState(), grade, now);
     saveProgress(progress);
 
     stats.reviewed[card.id] = true;
@@ -477,8 +440,7 @@
     if (grade === 'again') {
       stats.again++;
       // Aynı oturumda tekrar sor: birkaç kart sonraya yerleştir.
-      var pos = Math.min(queue.length, 3);
-      queue.splice(pos, 0, card);
+      queue.splice(Math.min(queue.length, 3), 0, card);
     }
 
     try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
@@ -493,19 +455,19 @@
     el.statAgain.textContent = stats ? stats.again : 0;
 
     el.summaryNext.textContent = total === 0
-      ? 'Bu destede bugün tekrar edilecek kart kalmadı. 👌'
+      ? 'Bu seviyede bugün tekrar edilecek kart kalmadı. 👌'
       : nextDueText();
 
     showScreen('summary');
   }
 
   function nextDueText() {
-    if (!deck) return '';
+    if (!group) return '';
     var now = Date.now();
+    var list = cardsOf(group.key);
     var soonest = Infinity;
-    var cards = cardsForLevel(deck);
-    for (var i = 0; i < cards.length; i++) {
-      var st = stateOf(deck.id, cards[i].id);
+    for (var i = 0; i < list.length; i++) {
+      var st = stateOf(list[i].id);
       if (st && st.due > now && st.due < soonest) soonest = st.due;
     }
     if (soonest === Infinity) return '';
@@ -515,13 +477,13 @@
       : 'Sıradaki tekrar: ' + days + ' gün sonra.';
   }
 
-  function backToDecks() {
-    deck = null;
+  function backToLevels() {
+    group = null;
     current = null;
     el.title.textContent = 'Fransızca Kartlar';
     try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
-    renderDecks();
-    showScreen('decks');
+    renderLevels();
+    showScreen('levels');
   }
 
   // ============================================================ olaylar
@@ -547,19 +509,11 @@
     applyTrVisibility();
   });
 
-  el.levelFilter.addEventListener('click', function (e) {
-    var chip = e.target.closest ? e.target.closest('.chip') : null;
-    if (!chip || !chip.dataset.level || chip.dataset.level === level) return;
-    level = chip.dataset.level;
-    writePref(LEVEL_KEY, level);
-    renderDecks();
-  });
-
-  el.back.addEventListener('click', backToDecks);
-  el.toDecks.addEventListener('click', backToDecks);
+  el.back.addEventListener('click', backToLevels);
+  el.toDecks.addEventListener('click', backToLevels);
   el.restart.addEventListener('click', function () {
-    if (deck) startSession(deck);
-    else backToDecks();
+    if (group) startSession(group);
+    else backToLevels();
   });
 
   // Masaüstünde pratik olsun diye klavye kısayolları (iPhone'da etkisiz).
@@ -581,16 +535,16 @@
     el.speakFront.textContent = '🔇 Seslendirme desteklenmiyor';
   }
 
-  loadDecks().then(function (list) {
-    decks = list;
-    renderDecks();
-    showScreen('decks');
+  loadVocab().then(function (list) {
+    cards = list;
+    renderLevels();
+    showScreen('levels');
   }).catch(function (err) {
     console.error(err);
-    el.deckList.innerHTML = '';
-    el.deckError.hidden = false;
-    el.deckError.textContent =
-      'Desteler yüklenemedi (' + err.message + '). Dosyaları doğrudan açmak (file://) ' +
+    el.levelList.innerHTML = '';
+    el.loadError.hidden = false;
+    el.loadError.textContent =
+      'Kelimeler yüklenemedi (' + err.message + '). Dosyaları doğrudan açmak (file://) ' +
       'yerine bir web sunucusundan servis et: örn. "python3 -m http.server" veya GitHub Pages.';
   });
 
