@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14161c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Fransızca Kartlar</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇫🇷</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button id="btn-back" class="icon-btn" type="button" hidden aria-label="Geri">←</button>
+  <h1 id="topbar-title">Fransızca Kartlar</h1>
+  <span id="topbar-count" class="badge" hidden></span>
+</header>
+
+<main>
+
+  <!-- 1) Deste seçimi -->
+  <section id="screen-decks" class="screen">
+    <p class="hint">Çalışmak istediğin desteyi seç.</p>
+    <div id="deck-list" class="deck-list">
+      <p class="muted">Desteler yükleniyor…</p>
+    </div>
+    <p id="deck-error" class="error" hidden></p>
+  </section>
+
+  <!-- 2) Çalışma -->
+  <section id="screen-study" class="screen" hidden>
+    <div class="card">
+      <div class="card-front">
+        <p id="card-front" class="fr-text"></p>
+        <button id="btn-speak-front" class="speak-btn" type="button">🔊 Dinle</button>
+      </div>
+
+      <div id="card-back" class="card-back" hidden>
+        <hr class="sep">
+        <p id="card-meaning" class="tr-text"></p>
+        <div id="example-wrap" hidden>
+          <p id="card-example" class="fr-example"></p>
+          <button id="btn-speak-example" class="speak-btn small" type="button">🔊 Örneği dinle</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-show" class="primary-btn" type="button">Cevabı Göster</button>
+
+      <div id="grade-buttons" class="grades" hidden>
+        <button class="grade again" type="button" data-grade="again">
+          <span class="g-label">Tekrar</span><span class="g-when" data-when="again"></span>
+        </button>
+        <button class="grade hard" type="button" data-grade="hard">
+          <span class="g-label">Zor</span><span class="g-when" data-when="hard"></span>
+        </button>
+        <button class="grade good" type="button" data-grade="good">
+          <span class="g-label">İyi</span><span class="g-when" data-when="good"></span>
+        </button>
+        <button class="grade easy" type="button" data-grade="easy">
+          <span class="g-label">Kolay</span><span class="g-when" data-when="easy"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3) Özet -->
+  <section id="screen-summary" class="screen" hidden>
+    <div class="summary">
+      <h2>Oturum bitti 🎉</h2>
+      <ul class="stats">
+        <li><span id="stat-total">0</span> kart tekrar edildi</li>
+        <li><span id="stat-easy">0</span> tanesi “Kolay” geçti</li>
+        <li><span id="stat-again">0</span> tanesi “Tekrar” işaretlendi</li>
+      </ul>
+      <p id="summary-next" class="muted"></p>
+      <button id="btn-restart" class="primary-btn" type="button">Tekrar kontrol et</button>
+      <button id="btn-to-decks" class="ghost-btn" type="button">Destelere dön</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

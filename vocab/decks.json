@@ -1,0 +1,14 @@
+[
+  {
+    "id": "temel-kelimeler",
+    "name": "Temel Kelimeler",
+    "description": "Başlangıç seviyesi günlük kelimeler",
+    "file": "vocab/temel-kelimeler.json"
+  },
+  {
+    "id": "fiiller",
+    "name": "Fiiller",
+    "description": "Sık kullanılan fiiller",
+    "file": "vocab/fiiller.json"
+  }
+]
