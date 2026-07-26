@@ -1,0 +1,14 @@
+[
+  { "id": "1",  "front": "l'entretien d'embauche", "back": "iş görüşmesi",    "example": "J'ai un entretien d'embauche demain.",     "exampleTr": "Yarın iş görüşmem var." },
+  { "id": "2",  "front": "le stage",        "back": "staj",                   "example": "Elle fait un stage dans une banque.",      "exampleTr": "Bir bankada staj yapıyor." },
+  { "id": "3",  "front": "la formation",    "back": "eğitim, kurs",           "example": "Cette formation dure six mois.",           "exampleTr": "Bu eğitim altı ay sürüyor." },
+  { "id": "4",  "front": "postuler",        "back": "başvurmak",              "example": "J'ai postulé à trois offres.",             "exampleTr": "Üç ilana başvurdum." },
+  { "id": "5",  "front": "gérer",           "back": "yönetmek",               "example": "Il gère une petite équipe.",               "exampleTr": "Küçük bir ekibi yönetiyor." },
+  { "id": "6",  "front": "la réunion",      "back": "toplantı",               "example": "La réunion commence à neuf heures.",       "exampleTr": "Toplantı dokuzda başlıyor." },
+  { "id": "7",  "front": "l'échéance",      "back": "son teslim tarihi",      "example": "Nous devons respecter l'échéance.",        "exampleTr": "Son teslim tarihine uymalıyız." },
+  { "id": "8",  "front": "le salaire",      "back": "maaş",                   "example": "Le salaire est négociable.",               "exampleTr": "Maaş pazarlığa açık." },
+  { "id": "9",  "front": "améliorer",       "back": "geliştirmek, iyileştirmek", "example": "Je veux améliorer mon français.",       "exampleTr": "Fransızcamı geliştirmek istiyorum." },
+  { "id": "10", "front": "le domaine",      "back": "alan, saha",             "example": "Elle travaille dans le domaine de la santé.", "exampleTr": "Sağlık alanında çalışıyor." },
+  { "id": "11", "front": "faire face à",    "back": "başa çıkmak, göğüs germek", "example": "Nous faisons face à un problème technique.", "exampleTr": "Teknik bir sorunla başa çıkıyoruz." },
+  { "id": "12", "front": "mettre en place", "back": "hayata geçirmek, kurmak", "example": "Ils ont mis en place un nouveau système.", "exampleTr": "Yeni bir sistem kurdular." }
+]

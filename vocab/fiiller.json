@@ -1,14 +1,14 @@
 [
-  { "id": "1",  "front": "être",     "back": "olmak",              "example": "Je suis fatigué." },
-  { "id": "2",  "front": "avoir",    "back": "sahip olmak",        "example": "J'ai deux frères." },
-  { "id": "3",  "front": "aller",    "back": "gitmek",             "example": "Je vais à l'école." },
-  { "id": "4",  "front": "faire",    "back": "yapmak",             "example": "Qu'est-ce que tu fais ?" },
-  { "id": "5",  "front": "parler",   "back": "konuşmak",           "example": "Je parle un peu français." },
-  { "id": "6",  "front": "manger",   "back": "yemek yemek",        "example": "Nous mangeons à midi." },
-  { "id": "7",  "front": "boire",    "back": "içmek",              "example": "Il boit du café." },
-  { "id": "8",  "front": "voir",     "back": "görmek",             "example": "Je vois la mer." },
-  { "id": "9",  "front": "venir",    "back": "gelmek",             "example": "Elle vient de Paris." },
-  { "id": "10", "front": "prendre",  "back": "almak",              "example": "Je prends le bus." },
-  { "id": "11", "front": "pouvoir",  "back": "-ebilmek",           "example": "Tu peux m'aider ?" },
-  { "id": "12", "front": "vouloir",  "back": "istemek",            "example": "Je veux apprendre le français." }
+  { "id": "1",  "front": "être",     "back": "olmak",         "example": "Je suis fatigué.",                "exampleTr": "Yorgunum." },
+  { "id": "2",  "front": "avoir",    "back": "sahip olmak",   "example": "J'ai deux frères.",               "exampleTr": "İki erkek kardeşim var." },
+  { "id": "3",  "front": "aller",    "back": "gitmek",        "example": "Je vais à l'école.",              "exampleTr": "Okula gidiyorum." },
+  { "id": "4",  "front": "faire",    "back": "yapmak",        "example": "Qu'est-ce que tu fais ?",         "exampleTr": "Ne yapıyorsun?" },
+  { "id": "5",  "front": "parler",   "back": "konuşmak",      "example": "Je parle un peu français.",       "exampleTr": "Biraz Fransızca konuşuyorum." },
+  { "id": "6",  "front": "manger",   "back": "yemek yemek",   "example": "Nous mangeons à midi.",           "exampleTr": "Öğlen yemek yiyoruz." },
+  { "id": "7",  "front": "boire",    "back": "içmek",         "example": "Il boit du café.",                "exampleTr": "Kahve içiyor." },
+  { "id": "8",  "front": "voir",     "back": "görmek",        "example": "Je vois la mer.",                 "exampleTr": "Denizi görüyorum." },
+  { "id": "9",  "front": "venir",    "back": "gelmek",        "example": "Elle vient de Paris.",            "exampleTr": "Paris'ten geliyor." },
+  { "id": "10", "front": "prendre",  "back": "almak",         "example": "Je prends le bus.",               "exampleTr": "Otobüse biniyorum." },
+  { "id": "11", "front": "pouvoir",  "back": "-ebilmek",      "example": "Tu peux m'aider ?",               "exampleTr": "Bana yardım edebilir misin?" },
+  { "id": "12", "front": "vouloir",  "back": "istemek",       "example": "Je veux apprendre le français.",  "exampleTr": "Fransızca öğrenmek istiyorum." }
 ]

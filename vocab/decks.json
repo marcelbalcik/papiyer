@@ -2,13 +2,43 @@
   {
     "id": "temel-kelimeler",
     "name": "Temel Kelimeler",
-    "description": "Başlangıç seviyesi günlük kelimeler",
+    "description": "Günlük hayatın ilk kelimeleri",
+    "level": "A1",
     "file": "vocab/temel-kelimeler.json"
   },
   {
     "id": "fiiller",
-    "name": "Fiiller",
-    "description": "Sık kullanılan fiiller",
+    "name": "Temel Fiiller",
+    "description": "En sık kullanılan fiiller",
+    "level": "A1",
     "file": "vocab/fiiller.json"
+  },
+  {
+    "id": "gunluk-hayat",
+    "name": "Günlük Hayat",
+    "description": "Randevu, alışveriş, ulaşım",
+    "level": "A2",
+    "file": "vocab/gunluk-hayat.json"
+  },
+  {
+    "id": "is-ve-egitim",
+    "name": "İş ve Eğitim",
+    "description": "Çalışma hayatı ve okul",
+    "level": "B1",
+    "file": "vocab/is-ve-egitim.json"
+  },
+  {
+    "id": "soyut-kavramlar",
+    "name": "Soyut Kavramlar",
+    "description": "Tartışma ve metin dili",
+    "level": "B2",
+    "file": "vocab/soyut-kavramlar.json"
+  },
+  {
+    "id": "ileri-ifadeler",
+    "name": "İleri İfadeler",
+    "description": "Yazılı ve akademik dil kalıpları",
+    "level": "C1",
+    "file": "vocab/ileri-ifadeler.json"
   }
 ]

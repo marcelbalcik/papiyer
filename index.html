@@ -22,7 +22,13 @@
 
   <!-- 1) Deste seçimi -->
   <section id="screen-decks" class="screen">
-    <p class="hint">Çalışmak istediğin desteyi seç.</p>
+    <p class="hint">Çalışmak istediğin seviyeyi ve desteyi seç.</p>
+    <div id="level-filter" class="level-filter" role="group" aria-label="Seviye filtresi">
+      <button class="chip is-active" type="button" data-level="all">Tümü</button>
+      <button class="chip" type="button" data-level="A">A <span class="chip-sub">başlangıç</span></button>
+      <button class="chip" type="button" data-level="B">B <span class="chip-sub">orta</span></button>
+      <button class="chip" type="button" data-level="C">C <span class="chip-sub">ileri</span></button>
+    </div>
     <div id="deck-list" class="deck-list">
       <p class="muted">Desteler yükleniyor…</p>
     </div>
@@ -42,7 +48,11 @@
         <p id="card-meaning" class="tr-text"></p>
         <div id="example-wrap" hidden>
           <p id="card-example" class="fr-example"></p>
-          <button id="btn-speak-example" class="speak-btn small" type="button">🔊 Örneği dinle</button>
+          <p id="card-example-tr" class="tr-example" hidden></p>
+          <div class="example-actions">
+            <button id="btn-speak-example" class="speak-btn small" type="button">🔊 Örneği dinle</button>
+            <button id="btn-toggle-tr" class="speak-btn small" type="button" hidden>Çeviriyi göster</button>
+          </div>
         </div>
       </div>
     </div>

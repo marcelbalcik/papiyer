@@ -7,6 +7,8 @@
   // ---------------------------------------------------------------- sabitler
   var STORAGE_KEY = 'frcards.v1.progress';
   var LAST_DECK_KEY = 'frcards.v1.lastDeck';
+  var LEVEL_KEY = 'frcards.v1.level';
+  var TR_PREF_KEY = 'frcards.v1.showExampleTr';
   var DECKS_INDEX = 'vocab/decks.json';
 
   var DAY = 24 * 60 * 60 * 1000;
@@ -16,11 +18,21 @@
   var MAX_INTERVAL = 365;
 
   // ------------------------------------------------------------------ durum
-  var decks = [];          // [{id, name, file, description, cards: []}]
+  var decks = [];          // [{id, name, file, description, level, cards: []}]
   var deck = null;         // aktif deste
   var queue = [];          // bu oturumda gösterilecek kartlar
   var current = null;      // ekrandaki kart
   var stats = null;        // oturum istatistikleri
+  var level = readPref(LEVEL_KEY, 'all');            // 'all' | 'A' | 'B' | 'C'
+  var showTr = readPref(TR_PREF_KEY, '0') === '1';   // örnek cümle çevirisi açık mı
+
+  function readPref(key, fallback) {
+    try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
+  }
+
+  function writePref(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) {}
+  }
 
   // -------------------------------------------------------------- DOM kısayolları
   function $(id) { return document.getElementById(id); }
@@ -31,6 +43,7 @@
     count: $('topbar-count'),
 
     screenDecks: $('screen-decks'),
+    levelFilter: $('level-filter'),
     deckList: $('deck-list'),
     deckError: $('deck-error'),
 
@@ -41,7 +54,9 @@
     meaning: $('card-meaning'),
     exampleWrap: $('example-wrap'),
     example: $('card-example'),
+    exampleTr: $('card-example-tr'),
     speakExample: $('btn-speak-example'),
+    toggleTr: $('btn-toggle-tr'),
     show: $('btn-show'),
     grades: $('grade-buttons'),
 
@@ -232,7 +247,7 @@
   }
 
   /* Deste dosyası ya düz bir dizi ya da { name, cards: [...] } olabilir. */
-  function normalizeCards(raw, deckId) {
+  function normalizeCards(raw, deckId, deckLevel) {
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.cards) ? raw.cards : []);
     var out = [];
     for (var i = 0; i < list.length; i++) {
@@ -242,10 +257,23 @@
         id: String(c.id != null ? c.id : (deckId + '-' + i)),
         front: String(c.front),
         back: String(c.back),
-        example: c.example ? String(c.example) : ''
+        example: c.example ? String(c.example) : '',
+        exampleTr: c.exampleTr ? String(c.exampleTr) : '',
+        // Kartın kendi seviyesi yoksa destenin seviyesini devralır.
+        level: String(c.level || deckLevel || '').toUpperCase()
       });
     }
     return out;
+  }
+
+  /* 'A1', 'B2' gibi seviyeler A/B/C filtresine ilk harfiyle eşleşir. */
+  function matchesLevel(cardLevel, filter) {
+    if (filter === 'all') return true;
+    return !!cardLevel && cardLevel.charAt(0) === filter;
+  }
+
+  function cardsForLevel(d) {
+    return d.cards.filter(function (c) { return matchesLevel(c.level, level); });
   }
 
   function loadDecks() {
@@ -253,41 +281,65 @@
       var list = Array.isArray(index) ? index : (index.decks || []);
       return Promise.all(list.map(function (d, i) {
         var id = String(d.id || d.file || ('deste-' + i));
+        var lvl = String(d.level || '').toUpperCase();
         return fetchJSON(d.file).then(function (raw) {
           return {
             id: id,
             name: d.name || id,
             description: d.description || '',
+            level: lvl,
             file: d.file,
-            cards: normalizeCards(raw, id)
+            cards: normalizeCards(raw, id, lvl)
           };
         }).catch(function (err) {
           console.warn(err);
-          return { id: id, name: d.name || id, description: 'Dosya okunamadı', file: d.file, cards: [] };
+          return {
+            id: id, name: d.name || id, description: 'Dosya okunamadı',
+            level: lvl, file: d.file, cards: []
+          };
         });
       }));
     });
   }
 
-  function dueCount(d, now) {
+  function dueCount(cards, deckId, now) {
     var n = 0;
-    for (var i = 0; i < d.cards.length; i++) {
-      if (isDue(stateOf(d.id, d.cards[i].id), now)) n++;
+    for (var i = 0; i < cards.length; i++) {
+      if (isDue(stateOf(deckId, cards[i].id), now)) n++;
     }
     return n;
+  }
+
+  function renderLevelChips() {
+    var chips = el.levelFilter.querySelectorAll('.chip');
+    for (var i = 0; i < chips.length; i++) {
+      chips[i].classList.toggle('is-active', chips[i].dataset.level === level);
+    }
   }
 
   function renderDecks() {
     var now = Date.now();
     el.deckList.innerHTML = '';
+    renderLevelChips();
 
     if (!decks.length) {
       el.deckList.innerHTML = '<p class="muted">Hiç deste bulunamadı. vocab/decks.json dosyasını kontrol et.</p>';
       return;
     }
 
-    decks.forEach(function (d) {
-      var due = dueCount(d, now);
+    // Seçili seviyede kartı olmayan desteler listelenmez.
+    var visible = decks.filter(function (d) { return cardsForLevel(d).length > 0; });
+
+    if (!visible.length) {
+      el.deckList.innerHTML =
+        '<p class="muted">Bu seviyede kart yok. Başka bir seviye seç ya da vocab/ altına ' +
+        'bu seviyede bir deste ekle.</p>';
+      return;
+    }
+
+    visible.forEach(function (d) {
+      var cards = cardsForLevel(d);
+      var due = dueCount(cards, d.id, now);
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'deck';
@@ -297,13 +349,19 @@
 
       var name = document.createElement('div');
       name.className = 'deck-name';
-      name.textContent = d.name;
+      if (d.level) {
+        var tag = document.createElement('span');
+        tag.className = 'level-tag';
+        tag.textContent = d.level;
+        name.appendChild(tag);
+      }
+      name.appendChild(document.createTextNode(d.name));
 
       var sub = document.createElement('div');
       sub.className = 'deck-sub';
       sub.textContent = d.description
-        ? d.description + ' · ' + d.cards.length + ' kart'
-        : d.cards.length + ' kart';
+        ? d.description + ' · ' + cards.length + ' kart'
+        : cards.length + ' kart';
 
       var badge = document.createElement('span');
       badge.className = 'deck-due' + (due ? '' : ' zero');
@@ -335,7 +393,7 @@
     try { localStorage.setItem(LAST_DECK_KEY, d.id); } catch (e) {}
 
     var now = Date.now();
-    queue = shuffle(d.cards.filter(function (c) {
+    queue = shuffle(cardsForLevel(d).filter(function (c) {
       return isDue(stateOf(d.id, c.id), now);
     }));
 
@@ -366,6 +424,10 @@
     if (current.example) {
       el.example.textContent = current.example;
       el.exampleWrap.hidden = false;
+      el.exampleTr.textContent = current.exampleTr;
+      // Çeviri butonu yalnızca çevirisi olan kartlarda; tercih kartlar arası korunur.
+      el.toggleTr.hidden = !current.exampleTr;
+      applyTrVisibility();
     } else {
       el.exampleWrap.hidden = true;
     }
@@ -376,6 +438,12 @@
     el.show.hidden = false;
     el.speakFront.classList.remove('speaking');
     el.speakExample.classList.remove('speaking');
+  }
+
+  function applyTrVisibility() {
+    var has = !!(current && current.exampleTr);
+    el.exampleTr.hidden = !(has && showTr);
+    el.toggleTr.textContent = showTr ? 'Çeviriyi gizle' : 'Çeviriyi göster';
   }
 
   function revealAnswer() {
@@ -435,8 +503,9 @@
     if (!deck) return '';
     var now = Date.now();
     var soonest = Infinity;
-    for (var i = 0; i < deck.cards.length; i++) {
-      var st = stateOf(deck.id, deck.cards[i].id);
+    var cards = cardsForLevel(deck);
+    for (var i = 0; i < cards.length; i++) {
+      var st = stateOf(deck.id, cards[i].id);
       if (st && st.due > now && st.due < soonest) soonest = st.due;
     }
     if (soonest === Infinity) return '';
@@ -470,6 +539,20 @@
 
   el.speakExample.addEventListener('click', function () {
     if (current && current.example) tts.speak(current.example, el.speakExample);
+  });
+
+  el.toggleTr.addEventListener('click', function () {
+    showTr = !showTr;
+    writePref(TR_PREF_KEY, showTr ? '1' : '0');
+    applyTrVisibility();
+  });
+
+  el.levelFilter.addEventListener('click', function (e) {
+    var chip = e.target.closest ? e.target.closest('.chip') : null;
+    if (!chip || !chip.dataset.level || chip.dataset.level === level) return;
+    level = chip.dataset.level;
+    writePref(LEVEL_KEY, level);
+    renderDecks();
   });
 
   el.back.addEventListener('click', backToDecks);

@@ -8,6 +8,7 @@ tasarlandı, GitHub Pages'te barındırılabilir.
 - Tüm ilerleme tarayıcının `localStorage`'ında tutulur (sunucu, hesap, senkron yok).
 - Web Speech API ile Fransızca telaffuz (`fr-FR`). iOS kısıtlaması gereği
   seslendirme yalnızca "🔊 Dinle" butonuna basınca çalışır, otomatik başlamaz.
+- A / B / C seviye filtresi ve isteğe bağlı örnek cümle çevirisi.
 
 ## Dosyalar
 
@@ -16,9 +17,34 @@ index.html                    uygulama iskeleti
 style.css                     stiller (mobil öncelikli)
 app.js                        kart akışı + SM-2 benzeri algoritma
 vocab/decks.json              deste listesi (manifest)
-vocab/temel-kelimeler.json    örnek deste (15 kelime)
-vocab/fiiller.json            örnek deste (12 fiil)
+vocab/temel-kelimeler.json    A1 · 15 kelime
+vocab/fiiller.json            A1 · 12 fiil
+vocab/gunluk-hayat.json       A2 · 12 kelime
+vocab/is-ve-egitim.json       B1 · 12 kelime
+vocab/soyut-kavramlar.json    B2 · 12 kelime
+vocab/ileri-ifadeler.json     C1 · 12 kelime
 ```
+
+## Seviyeler
+
+Deste ekranının üstündeki **Tümü / A / B / C** filtresi hangi kartların
+çalışılacağını belirler. Seçim `localStorage`'a yazılır, uygulamayı tekrar
+açtığında hatırlanır.
+
+Seviye `decks.json` içinde deste bazında verilir (`"level": "A1"`). Filtre ilk
+harfe bakar, yani `A1` ve `A2` desteleri **A** filtresinde birlikte çıkar; deste
+kartındaki rozette tam seviye (`A1`, `B2` …) görünür. Seçili seviyede hiç kartı
+olmayan desteler listelenmez.
+
+İstersen tek tek kartlara da seviye verebilirsin; kartın `level` alanı destenin
+seviyesini ezer, böylece karışık seviyeli bir deste tutabilirsin:
+
+```json
+{ "id": "7", "front": "l'écueil", "back": "engel, tuzak", "level": "C1" }
+```
+
+`level` yazmazsan kart, bağlı olduğu destenin seviyesini devralır. Hiçbirinde
+seviye yoksa kart yalnızca "Tümü" filtresinde görünür.
 
 ## GitHub Pages'e deploy
 
@@ -51,8 +77,14 @@ python3 -m http.server 8000
 
 ```json
 [
-  { "id": "1", "front": "le fromage", "back": "peynir", "example": "J'aime le fromage." },
-  { "id": "2", "front": "la pomme",   "back": "elma",   "example": "Je mange une pomme." }
+  {
+    "id": "1",
+    "front": "le fromage",
+    "back": "peynir",
+    "example": "J'aime le fromage de chèvre.",
+    "exampleTr": "Keçi peynirini severim."
+  },
+  { "id": "2", "front": "la pomme", "back": "elma", "example": "Je mange une pomme." }
 ]
 ```
 
@@ -61,6 +93,10 @@ python3 -m http.server 8000
 - `front` — Fransızca kelime/cümle (sesli okunan kısım).
 - `back` — Türkçe karşılığı.
 - `example` — isteğe bağlı örnek cümle; boş bırakabilir ya da hiç yazmayabilirsin.
+- `exampleTr` — isteğe bağlı; örnek cümlenin Türkçesi. Kartın arkasında varsayılan
+  olarak gizli durur, "Çeviriyi göster" butonuyla açılır ve bu tercih sonraki
+  kartlarda da korunur. Yazmadığın kartlarda buton hiç görünmez.
+- `level` — isteğe bağlı; kart bazında seviye (yukarıdaki "Seviyeler" bölümü).
 
 2. `vocab/decks.json` dosyasına desteyi kaydet:
 
@@ -70,12 +106,14 @@ python3 -m http.server 8000
     "id": "yemek",
     "name": "Yemek Kelimeleri",
     "description": "Mutfak ve yiyecekler",
+    "level": "A2",
     "file": "vocab/yemek.json"
   }
 ]
 ```
 
 - `id` — desteye ait ilerlemenin anahtarı; sonradan değiştirme.
+- `level` — destenin varsayılan seviyesi (`A1`, `A2`, `B1`, `B2`, `C1`, `C2`).
 - `file` — depo kökünden itibaren yol.
 
 3. Commit'leyip push et. GitHub Pages birkaç dakika içinde günceller.

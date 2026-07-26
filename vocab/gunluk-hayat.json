@@ -1,0 +1,14 @@
+[
+  { "id": "1",  "front": "la gare",          "back": "tren istasyonu",     "example": "Le train part de la gare à midi.",   "exampleTr": "Tren istasyondan öğlen kalkıyor." },
+  { "id": "2",  "front": "faire les courses", "back": "alışveriş yapmak",  "example": "Je fais les courses le samedi.",     "exampleTr": "Cumartesileri alışveriş yaparım." },
+  { "id": "3",  "front": "le rendez-vous",   "back": "randevu",            "example": "J'ai un rendez-vous chez le médecin.", "exampleTr": "Doktorda randevum var." },
+  { "id": "4",  "front": "la météo",         "back": "hava durumu",        "example": "La météo annonce de la pluie.",      "exampleTr": "Hava durumu yağmur olacağını söylüyor." },
+  { "id": "5",  "front": "tomber en panne",  "back": "bozulmak, arıza yapmak", "example": "Ma voiture est tombée en panne.", "exampleTr": "Arabam bozuldu." },
+  { "id": "6",  "front": "le quartier",      "back": "mahalle, semt",      "example": "J'habite dans un quartier calme.",   "exampleTr": "Sakin bir mahallede oturuyorum." },
+  { "id": "7",  "front": "l'ascenseur",      "back": "asansör",            "example": "L'ascenseur ne marche pas.",         "exampleTr": "Asansör çalışmıyor." },
+  { "id": "8",  "front": "rendre visite à",  "back": "ziyaret etmek",      "example": "Je rends visite à mes parents.",     "exampleTr": "Aileme ziyarete gidiyorum." },
+  { "id": "9",  "front": "la facture",       "back": "fatura",             "example": "Il faut payer la facture avant vendredi.", "exampleTr": "Faturayı cumadan önce ödemek gerek." },
+  { "id": "10", "front": "avoir besoin de",  "back": "ihtiyacı olmak",     "example": "J'ai besoin d'aide.",                "exampleTr": "Yardıma ihtiyacım var." },
+  { "id": "11", "front": "de temps en temps", "back": "arada sırada",      "example": "De temps en temps, je vais au cinéma.", "exampleTr": "Arada sırada sinemaya giderim." },
+  { "id": "12", "front": "être en retard",   "back": "geç kalmak",         "example": "Désolé, je suis en retard.",         "exampleTr": "Üzgünüm, geç kaldım." }
+]

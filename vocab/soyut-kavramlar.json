@@ -1,0 +1,14 @@
+[
+  { "id": "1",  "front": "l'enjeu",            "back": "mesele, söz konusu olan şey", "example": "L'enjeu principal est écologique.",            "exampleTr": "Asıl mesele ekolojik." },
+  { "id": "2",  "front": "remettre en question", "back": "sorgulamak",         "example": "Il remet en question ses choix.",                     "exampleTr": "Seçimlerini sorguluyor." },
+  { "id": "3",  "front": "la démarche",        "back": "yaklaşım, girişim",    "example": "Sa démarche est très originale.",                     "exampleTr": "Yaklaşımı çok özgün." },
+  { "id": "4",  "front": "souligner",          "back": "vurgulamak",           "example": "L'auteur souligne l'importance du sujet.",            "exampleTr": "Yazar konunun önemini vurguluyor." },
+  { "id": "5",  "front": "néanmoins",          "back": "yine de, buna rağmen", "example": "C'est difficile ; néanmoins, ça vaut la peine.",      "exampleTr": "Zor; yine de buna değer." },
+  { "id": "6",  "front": "le constat",         "back": "tespit, saptama",      "example": "Le constat est plutôt inquiétant.",                   "exampleTr": "Tespit oldukça endişe verici." },
+  { "id": "7",  "front": "s'avérer",           "back": "olduğu ortaya çıkmak", "example": "La méthode s'est avérée efficace.",                   "exampleTr": "Yöntemin etkili olduğu ortaya çıktı." },
+  { "id": "8",  "front": "l'ampleur",          "back": "büyüklük, çap",        "example": "On sous-estime l'ampleur du problème.",               "exampleTr": "Sorunun büyüklüğü hafife alınıyor." },
+  { "id": "9",  "front": "dans la mesure où",  "back": "olduğu ölçüde",        "example": "Je l'accepte dans la mesure où c'est justifié.",      "exampleTr": "Gerekçelendirildiği ölçüde kabul ediyorum." },
+  { "id": "10", "front": "le décalage",        "back": "uyumsuzluk, fark",     "example": "Il y a un décalage entre la théorie et la pratique.", "exampleTr": "Teori ile pratik arasında fark var." },
+  { "id": "11", "front": "entraîner",          "back": "yol açmak, beraberinde getirmek", "example": "Cette décision entraîne des conséquences graves.", "exampleTr": "Bu karar ciddi sonuçlar doğuruyor." },
+  { "id": "12", "front": "mettre en évidence", "back": "ortaya koymak, göstermek", "example": "L'étude met en évidence un lien clair.",           "exampleTr": "Çalışma net bir bağlantı ortaya koyuyor." }
+]

@@ -1,0 +1,14 @@
+[
+  { "id": "1",  "front": "le bouleversement",      "back": "altüst oluş, köklü değişim", "example": "Ce changement a provoqué un véritable bouleversement.", "exampleTr": "Bu değişim gerçek bir altüst oluşa yol açtı." },
+  { "id": "2",  "front": "quoi qu'il en soit",     "back": "her halükârda",         "example": "Quoi qu'il en soit, la décision est prise.",            "exampleTr": "Her halükârda karar verildi." },
+  { "id": "3",  "front": "dans le cadre de",       "back": "kapsamında, çerçevesinde", "example": "Dans le cadre de ce projet, nous avons tout revu.",   "exampleTr": "Bu proje kapsamında her şeyi gözden geçirdik." },
+  { "id": "4",  "front": "pallier",                "back": "telafi etmek, gidermek", "example": "Il faut pallier le manque de personnel.",              "exampleTr": "Personel eksikliğini gidermek gerekiyor." },
+  { "id": "5",  "front": "s'inscrire dans",        "back": "bir çerçeveye oturmak",  "example": "Cette réforme s'inscrit dans une longue tradition.",   "exampleTr": "Bu reform uzun bir geleneğe oturuyor." },
+  { "id": "6",  "front": "l'essor",                "back": "atılım, hızlı gelişme",  "example": "L'essor du numérique a tout transformé.",              "exampleTr": "Dijitalleşmenin atılımı her şeyi dönüştürdü." },
+  { "id": "7",  "front": "à l'instar de",          "back": "gibi, örneğinde olduğu gibi", "example": "À l'instar de ses voisins, le pays a réagi vite.", "exampleTr": "Komşuları gibi ülke de hızlı tepki verdi." },
+  { "id": "8",  "front": "accabler",               "back": "bunaltmak, ezmek",       "example": "Les critiques l'ont accablé.",                         "exampleTr": "Eleştiriler onu bunalttı." },
+  { "id": "9",  "front": "la mise en œuvre",       "back": "hayata geçirme, uygulama", "example": "La mise en œuvre du plan prendra des années.",       "exampleTr": "Planın hayata geçirilmesi yıllar alacak." },
+  { "id": "10", "front": "force est de constater", "back": "kabul etmek gerekir ki", "example": "Force est de constater que rien n'a changé.",           "exampleTr": "Kabul etmek gerekir ki hiçbir şey değişmedi." },
+  { "id": "11", "front": "l'écueil",               "back": "engel, tuzak",           "example": "Le principal écueil reste le financement.",            "exampleTr": "Başlıca engel finansman olmayı sürdürüyor." },
+  { "id": "12", "front": "déceler",                "back": "sezmek, tespit etmek",   "example": "On décèle une légère amélioration.",                   "exampleTr": "Hafif bir iyileşme seziliyor." }
+]
