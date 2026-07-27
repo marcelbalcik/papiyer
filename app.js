@@ -12,6 +12,7 @@
 
   var DAY = 24 * 60 * 60 * 1000;
   var AGAIN_DELAY = 10 * 60 * 1000; // "Tekrar" → 10 dakika sonra
+  var DAY_START_HOUR = 4;           // gün 04:00'te döner (gece çalışması için)
   var MIN_EASE = 1.3;
   var START_EASE = 2.5;
   var MAX_INTERVAL = 365;
@@ -28,6 +29,7 @@
   var cards = [];          // vocab.json'daki bütün kartlar
   var group = null;        // aktif grup ('all' | 'A' | 'B' | 'C')
   var queue = [];          // bu oturumda gösterilecek kartlar
+  var learning = [];       // "Tekrar" denen kartlar: [{ card, due }]
   var current = null;      // ekrandaki kart
   var stats = null;        // oturum istatistikleri
   var showTr = readPref(TR_PREF_KEY, '0') === '1'; // örnek cümle çevirisi açık mı
@@ -103,11 +105,14 @@
 
   // ============================================================ SM-2 (sadeleştirilmiş)
 
-  // Gün cinsinden aralıkları ertesi günlerin başlangıcına yerleştir; böylece
-  // "bugün veya öncesi" kontrolü takvim günü mantığıyla çalışır.
+  // Gün cinsinden aralıkları günlerin başlangıcına yerleştir; böylece "bugün
+  // veya öncesi" kontrolü takvim günü mantığıyla çalışır. Gün, gece yarısı
+  // değil 04:00'te döner: yoksa 23:50'de "1 gün" sonraya atılan kart on dakika
+  // sonra geri gelir. Geceyarısından sonraki çalışma da önceki güne sayılır.
   function startOfDay(ts) {
     var d = new Date(ts);
-    d.setHours(0, 0, 0, 0);
+    if (d.getHours() < DAY_START_HOUR) d.setDate(d.getDate() - 1);
+    d.setHours(DAY_START_HOUR, 0, 0, 0);
     return d.getTime();
   }
 
@@ -361,6 +366,7 @@
       return isDue(stateOf(c.id), now);
     }));
 
+    learning = [];
     stats = { reviewed: {}, answers: 0, easy: 0, again: 0 };
     el.title.textContent = g.key === 'all' ? 'Tümü' : g.name + ' · ' + g.note;
 
@@ -373,14 +379,30 @@
     nextCard();
   }
 
+  /* Süresi dolmuş "Tekrar" kartlarının en eskisini verir, yoksa null. */
+  function dueLearningIndex(now) {
+    var idx = -1;
+    for (var i = 0; i < learning.length; i++) {
+      if (learning[i].due <= now && (idx < 0 || learning[i].due < learning[idx].due)) idx = i;
+    }
+    return idx;
+  }
+
   function nextCard() {
-    if (!queue.length) {
+    var now = Date.now();
+    var idx = dueLearningIndex(now);
+
+    if (idx >= 0) {
+      current = learning.splice(idx, 1)[0].card;   // 10 dakikası dolmuş kart
+    } else if (queue.length) {
+      current = queue.shift();
+    } else {
+      // Kuyruk bitti; bekleyen "Tekrar" kartları varsa özet bunu söyler.
       showSummary();
       return;
     }
 
-    current = queue.shift();
-    el.count.textContent = (queue.length + 1) + ' kart';
+    el.count.textContent = (queue.length + learning.length + 1) + ' kart';
 
     el.front.textContent = current.front;
     el.meaning.textContent = current.back;
@@ -430,8 +452,9 @@
 
     var now = Date.now();
     var card = current;
+    var state = schedule(stateOf(card.id) || newState(), grade, now);
 
-    progress[card.id] = schedule(stateOf(card.id) || newState(), grade, now);
+    progress[card.id] = state;
     saveProgress(progress);
 
     stats.reviewed[card.id] = true;
@@ -439,8 +462,9 @@
     if (grade === 'easy') stats.easy++;
     if (grade === 'again') {
       stats.again++;
-      // Aynı oturumda tekrar sor: birkaç kart sonraya yerleştir.
-      queue.splice(Math.min(queue.length, 3), 0, card);
+      // Aynı oturumda tekrar sorulur ama ancak süresi dolunca (10 dk) — sıra
+      // numarasıyla geri koymak, kuyruk kısaldığında kartı anında geri getiriyordu.
+      learning.push({ card: card, due: state.due });
     }
 
     try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
@@ -454,11 +478,27 @@
     el.statEasy.textContent = stats ? stats.easy : 0;
     el.statAgain.textContent = stats ? stats.again : 0;
 
-    el.summaryNext.textContent = total === 0
-      ? 'Bu seviyede bugün tekrar edilecek kart kalmadı. 👌'
-      : nextDueText();
+    if (learning.length) {
+      // Kuyruk bitti ama "Tekrar" kartlarının süresi henüz dolmadı.
+      var wait = Math.max(1, Math.ceil((earliestLearningDue() - Date.now()) / 60000));
+      el.summaryNext.textContent =
+        learning.length + ' kart "Tekrar" olarak bekliyor, ' + wait +
+        ' dakika sonra tekrar sorulacak.';
+    } else if (total === 0) {
+      el.summaryNext.textContent = 'Şu an tekrar edilecek kart yok. 👌 ' + nextDueText();
+    } else {
+      el.summaryNext.textContent = nextDueText();
+    }
 
     showScreen('summary');
+  }
+
+  function earliestLearningDue() {
+    var soonest = Infinity;
+    for (var i = 0; i < learning.length; i++) {
+      if (learning[i].due < soonest) soonest = learning[i].due;
+    }
+    return soonest;
   }
 
   function nextDueText() {
@@ -471,10 +511,16 @@
       if (st && st.due > now && st.due < soonest) soonest = st.due;
     }
     if (soonest === Infinity) return '';
-    var days = Math.max(0, Math.ceil((soonest - now) / DAY));
-    return days <= 1
-      ? 'Sıradaki tekrar: yarın.'
-      : 'Sıradaki tekrar: ' + days + ' gün sonra.';
+
+    var diff = soonest - now;
+    if (diff < 60 * 60 * 1000) {
+      return 'Sıradaki tekrar: ' + Math.max(1, Math.round(diff / 60000)) + ' dakika sonra.';
+    }
+    if (diff < 12 * 60 * 60 * 1000) {
+      return 'Sıradaki tekrar: ' + Math.round(diff / (60 * 60 * 1000)) + ' saat sonra.';
+    }
+    var days = Math.max(1, Math.round(diff / DAY));
+    return days === 1 ? 'Sıradaki tekrar: yarın.' : 'Sıradaki tekrar: ' + days + ' gün sonra.';
   }
 
   function backToLevels() {

@@ -77,13 +77,19 @@ Her kart için `sonraki tekrar tarihi`, `interval` (gün), `ease factor` ve
 
 | Buton | Etki |
 |---|---|
-| **Tekrar** | Ease −0.20, sayaç sıfırlanır, kart 10 dakika sonraya atılır ve aynı oturumda tekrar sorulur. |
+| **Tekrar** | Ease −0.20, sayaç sıfırlanır, kart 10 dakika sonraya atılır. Aynı oturumda tekrar sorulur, ama gerçekten 10 dakika dolduktan sonra — araya başka kartlar girer. Kuyruk bu süre dolmadan biterse oturum kapanır ve özet kaç kartın ne kadar sonra hazır olacağını söyler. |
 | **Zor** | Ease −0.15, interval ×1.2. |
 | **İyi** | İlk doğru: 1 gün → sonra 3 gün → sonrasında interval × ease. |
 | **Kolay** | Ease +0.15, "İyi" aralığının ~1.3 katı (en az 4 gün ve her zaman "İyi"den uzun). |
 
 Ease 1.3 ile 3.5 arasında sınırlanır, interval en fazla 365 gündür.
 Butonların altında o cevabın kartı ne kadar sonraya atacağı yazar.
+
+**Gün sınırı 04:00.** Gün cinsinden aralıklar gece yarısına değil sabah 04:00'e
+hizalanır (Anki de böyle yapar). Yoksa 23:50'de "1 gün" sonraya atılan kart on
+dakika sonra, gece yarısı geçer geçmez geri gelirdi. Bunun sonucu olarak gece
+geç saatte çalışırken "1 gün" pratikte "yarın sabah 04:00'ten sonra" demektir,
+ve gece yarısından sonraki çalışma önceki güne sayılır.
 
 ## GitHub Pages'e deploy
 
